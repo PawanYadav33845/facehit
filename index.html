@@ -1,159 +1,159 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>FaceHit</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FaceHit: Dynamic Facial Whack-A-Mole</title>
     <link rel="stylesheet" type="text/css" href="style.css" />
     <link
-      href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono|VT323&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=VT323&family=Outfit:wght@400;600;800&display=swap"
       rel="stylesheet"
     />
-
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-102358307-1"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'UA-102358307-1');
-    </script>
-
-
-    <!-- favicon -->
+    <!-- Favicon -->
     <link
       rel="icon"
       type="image/png"
       sizes="32x32"
       href="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/apple/225/hammer_1f528.png"
     />
+    <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/addons/p5.dom.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/13.0.1/Tone.min.js"></script>
     <script src="StartAudioContext.js"></script>
-    <script
-      src="https://unpkg.com/ml5@0.3.1/dist/ml5.min.js"
-      type="text/javascript"
-    ></script>
+    <script src="https://unpkg.com/ml5@0.3.1/dist/ml5.min.js" type="text/javascript"></script>
   </head>
 
   <body>
-    <h1>FaceHit: Dynamic Facial Whack-A-Mole</h1>
-
-    <p>
-      Play whack a mole with your nose👃 </a>
-    </p>
-    <div id="p5-canvas">
-      <button class="btn" id="play-btn">loading</button>
-      <div id="submit">
-        <div>
-          <h2>Submit Score</h2>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            required
-            minlength="2"
-            maxlength="40"
-            size="15"
-            placeholder="name"
-          />
+    <div class="app-container">
+      <!-- Top Header -->
+      <header class="app-header">
+        <div class="logo-container">
+          <span class="game-icon">🎯</span>
+          <h1>FACE<span class="highlight">HIT</span></h1>
+          <span class="tagline">Facial Whack-A-Mole</span>
         </div>
-        <h2><span id="submit-score">5</span></h2>
-        <button class="btn" id="submit-button">Send</button>
-        <button class="btn" id="nope-button">Nope</button>
-      </div>
-      <div id="leaders">
-        <h2>Top Players</h2>
-        <ol id="leaders-ol"></ol>
-        <button class="btn" id="play-again-button">Play Again</button>
-      </div>
+        
+        <!-- Highest Record Badge -->
+        <div id="top-record-banner" class="top-record-banner">
+          <span class="trophy-icon">👑</span>
+          <span class="top-record-label">ALL-TIME RECORD:</span>
+          <span id="top-record-name" class="top-record-val">Loading...</span>
+          <span id="top-record-score" class="top-record-score">0 pts</span>
+        </div>
+
+        <div class="header-actions">
+          <button id="audio-toggle-btn" class="icon-btn" title="Toggle Sound">🔊</button>
+        </div>
+      </header>
+
+      <!-- Main Game Layout -->
+      <main class="game-main">
+        <!-- Game Canvas & Overlays Wrapper -->
+        <div id="canvas-container" class="canvas-container">
+          <div id="p5-canvas"></div>
+
+          <!-- Loading & Start Overlay -->
+          <div id="start-overlay" class="overlay active">
+            <div class="overlay-card">
+              <div class="card-icon">👃🎯</div>
+              <h2>Ready to Hit?</h2>
+              <p class="instructions">
+                Move your nose to touch targets before the timer expires! 
+                You have <strong>3 Lives ❤️❤️❤️</strong>. Faster hits earn bonus points and combo multipliers.
+              </p>
+              <div class="status-indicator">
+                <span id="loading-spinner" class="spinner"></span>
+                <span id="status-text">Initializing AI Pose Detection...</span>
+              </div>
+              <button class="btn btn-primary" id="play-btn" disabled>
+                Loading AI...
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit Score Modal -->
+          <div id="submit-overlay" class="overlay hidden">
+            <div class="overlay-card">
+              <!-- Celebration Banner -->
+              <div id="celebration-banner" class="celebration-banner hidden">
+                <div class="confetti-burst">✨ 🏆 🎉 👑 ✨</div>
+                <h3>NEW RECORD CHAMPION!</h3>
+                <p>Congratulations! You beat the highest score!</p>
+              </div>
+
+              <h2>GAME OVER</h2>
+              <div class="final-score-container">
+                <span class="score-label">FINAL SCORE</span>
+                <span id="submit-score" class="final-score-val">0</span>
+              </div>
+              
+              <div class="input-group">
+                <label for="name">Enter Player Name:</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  required
+                  minlength="1"
+                  maxlength="20"
+                  placeholder="Your Name / Alias"
+                  autocomplete="off"
+                />
+              </div>
+              
+              <div class="btn-group">
+                <button class="btn btn-primary" id="submit-button">Save Encrypted Score</button>
+                <button class="btn btn-secondary" id="nope-button">Skip</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Leaderboard Overlay -->
+          <div id="leaders-overlay" class="overlay hidden">
+            <div class="overlay-card leaderboard-card">
+              <div class="leaderboard-header">
+                <h2>🏆 TOP PLAYERS</h2>
+                <span class="encryption-badge" title="Data encrypted with AES-GCM">🔒 Encrypted Database</span>
+              </div>
+              <div class="leaderboard-scroll">
+                <ol id="leaders-ol" class="leaders-list"></ol>
+              </div>
+              <div class="btn-group">
+                <button class="btn btn-primary" id="play-again-button">Play Again</button>
+                <button class="btn btn-danger-outline" id="clear-scores-button">Clear Scores</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HUD / Stats Bar -->
+        <div class="hud-panel">
+          <div class="hud-item">
+            <span class="hud-label">LIVES</span>
+            <span id="lives-display" class="hud-value hearts">❤️❤️❤️</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-label">SCORE</span>
+            <span id="score-display" class="hud-value">0</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-label">COMBO</span>
+            <span id="combo-display" class="hud-value">1x</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-label">TARGETS HIT</span>
+            <span id="hits-display" class="hud-value">0</span>
+          </div>
+        </div>
+      </main>
+
+      <!-- Footer -->
+      <footer class="app-footer">
+        <p>Built with p5.js, ml5 PoseNet & Tone.js | Secure AES Encrypted Local Storage</p>
+      </footer>
     </div>
 
-    <h3 id="score">score: 0</h3>
-    <p>
-      <a href="https://vibertthio.com/" target="_blank"
-        ></a
-      >
-    </p>
-    <script src="script.js"></script>
-  </body>
-</html><html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Shake It</title>
-    <link rel="stylesheet" type="text/css" href="style.css" />
-    <link
-      href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono|VT323&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-102358307-1"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'UA-102358307-1');
-    </script>
-
-
-    <!-- favicon -->
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/apple/225/hammer_1f528.png"
-    />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/p5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/addons/p5.dom.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/13.0.1/Tone.min.js"></script>
-    <script src="StartAudioContext.js"></script>
-    <script
-      src="https://unpkg.com/ml5@0.3.1/dist/ml5.min.js"
-      type="text/javascript"
-    ></script>
-  </head>
-
-  <body>
-    <h1>FaceHit: Dynamic Facial Whack-A-Mole </h1>
-
-    <p>
-      Play whack a mole with your nose👃 </a>.
-    </p>
-    <div id="p5-canvas">
-      <button class="btn" id="play-btn">loading</button>
-      <div id="submit">
-        <div>
-          <h2>Submit Score</h2>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            required
-            minlength="2"
-            maxlength="40"
-            size="15"
-            placeholder="name"
-          />
-        </div>
-        <h2><span id="submit-score">5</span></h2>
-        <button class="btn" id="submit-button">Send</button>
-        <button class="btn" id="nope-button">Nope</button>
-      </div>
-      <div id="leaders">
-        <h2>Top Players</h2>
-        <ol id="leaders-ol"></ol>
-        <button class="btn" id="play-again-button">Play Again</button>
-      </div>
-    </div>
-
-    <h3 id="score">score: 0</h3>
-    <p>
-      <a href="https://vibertthio.com/" target="_blank"
-        ></a
-      >
-    </p>
     <script src="script.js"></script>
   </body>
 </html>
